@@ -7,7 +7,7 @@ interface VideoData {
 interface GlobalElements {
     playAllBtn: HTMLButtonElement;
     pauseAllBtn: HTMLButtonElement;
-    syncBtn: HTMLButtonElement;
+    restartBtn: HTMLButtonElement;
     fullscreenBtn: HTMLButtonElement;
     newRowBtn: HTMLButtonElement;
     clearAllBtn: HTMLButtonElement;
@@ -33,7 +33,7 @@ class PanoramicDashcamViewer {
         this.globalElements = {
             playAllBtn: document.getElementById('playAllBtn') as HTMLButtonElement,
             pauseAllBtn: document.getElementById('pauseAllBtn') as HTMLButtonElement,
-            syncBtn: document.getElementById('syncBtn') as HTMLButtonElement,
+            restartBtn: document.getElementById('syncBtn') as HTMLButtonElement,
             fullscreenBtn: document.getElementById('fullscreenBtn') as HTMLButtonElement,
             newRowBtn: document.getElementById('newRowBtn') as HTMLButtonElement,
             clearAllBtn: document.getElementById('clearAllBtn') as HTMLButtonElement,
@@ -47,7 +47,7 @@ class PanoramicDashcamViewer {
     private initializeEventListeners(): void {
         this.globalElements.playAllBtn.addEventListener('click', () => this.playAllVideos());
         this.globalElements.pauseAllBtn.addEventListener('click', () => this.pauseAllVideos());
-        this.globalElements.syncBtn.addEventListener('click', () => this.syncAllVideos());
+        this.globalElements.restartBtn.addEventListener('click', () => this.syncAllVideos());
         this.globalElements.fullscreenBtn.addEventListener('click', () => this.enterFullscreen());
         this.globalElements.newRowBtn.addEventListener('click', () => this.addNewVideoRow());
         this.globalElements.clearAllBtn.addEventListener('click', () => this.clearAllVideos());
@@ -241,7 +241,7 @@ class PanoramicDashcamViewer {
         
         this.globalElements.playAllBtn.disabled = !hasVideos;
         this.globalElements.pauseAllBtn.disabled = !hasVideos;
-        this.globalElements.syncBtn.disabled = !hasVideos;
+        this.globalElements.restartBtn.disabled = !hasVideos;
         this.globalElements.fullscreenBtn.disabled = !hasVideos;
         this.globalElements.clearAllBtn.disabled = !hasVideos;
     }
