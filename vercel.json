@@ -1,0 +1,4 @@
+{
+  "buildCommand": "tsc && cp -r public/* .",
+  "outputDirectory": "."
+} 
