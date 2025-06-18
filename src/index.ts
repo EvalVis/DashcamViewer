@@ -219,7 +219,6 @@ class PanoramicDashcamViewer {
             panoramicContainer.removeChild(grid);
         });
         
-        // Reset to just first grid
         this.videoGrids = [this.videoGrids[0]];
         this.videoGrids[0].innerHTML = `
             <div class="video-section" data-position="0" data-grid="0">
