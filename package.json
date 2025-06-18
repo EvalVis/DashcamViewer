@@ -5,8 +5,6 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "ts-node src/index.ts",
     "serve": "npm run build && http-server . -p 8080 -o"
   },
   "keywords": [
