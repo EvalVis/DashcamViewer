@@ -1,4 +1,4 @@
-#Dashcam Viewer
+# Dashcam Viewer
 
 ## Loaded screen
 
@@ -23,6 +23,8 @@
 npm install
 npm run serve
 ```
+
+Navigate to `http://127.0.0.1:8080/public/index.html`.
 
 ## License
 

@@ -1,7 +1,7 @@
 {
   "name": "dashcamviewer",
   "version": "1.0.0",
-  "description": "An open-source video viewer for dashcams",
+  "description": "An open-source dashcam video viewer",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
