@@ -1,112 +1,242 @@
-// Dashcam Viewer - TypeScript Entry Point
-
-interface VideoElements {
-    videoFile: HTMLInputElement;
-    videoPlayer: HTMLVideoElement;
-    playBtn: HTMLButtonElement;
-    pauseBtn: HTMLButtonElement;
-    fullscreenBtn: HTMLButtonElement;
-    infoPanel: HTMLDivElement;
-    fileName: HTMLSpanElement;
-    fileSize: HTMLSpanElement;
-    duration: HTMLSpanElement;
-    resolution: HTMLSpanElement;
+interface VideoData {
+    file: File;
+    element: HTMLVideoElement;
+    url: string;
 }
 
-class DashcamViewer {
-    private elements: VideoElements;
+interface GlobalElements {
+    playAllBtn: HTMLButtonElement;
+    pauseAllBtn: HTMLButtonElement;
+    syncBtn: HTMLButtonElement;
+    fullscreenBtn: HTMLButtonElement;
+    clearAllBtn: HTMLButtonElement;
+    infoPanel: HTMLDivElement;
+    infoGrid: HTMLDivElement;
+}
+
+class PanoramicDashcamViewer {
+    private videos: (VideoData | null)[] = [];
+    private videoGrid!: HTMLElement;
+    private globalElements!: GlobalElements;
 
     constructor() {
-        this.elements = this.getElements();
+        this.videos = [null];
+        this.initializeElements();
         this.initializeEventListeners();
     }
 
-    private getElements(): VideoElements {
-        return {
-            videoFile: document.getElementById('videoFile') as HTMLInputElement,
-            videoPlayer: document.getElementById('videoPlayer') as HTMLVideoElement,
-            playBtn: document.getElementById('playBtn') as HTMLButtonElement,
-            pauseBtn: document.getElementById('pauseBtn') as HTMLButtonElement,
+    private initializeElements(): void {
+        this.videoGrid = document.getElementById('videoGrid') as HTMLElement;
+        
+        this.globalElements = {
+            playAllBtn: document.getElementById('playAllBtn') as HTMLButtonElement,
+            pauseAllBtn: document.getElementById('pauseAllBtn') as HTMLButtonElement,
+            syncBtn: document.getElementById('syncBtn') as HTMLButtonElement,
             fullscreenBtn: document.getElementById('fullscreenBtn') as HTMLButtonElement,
+            clearAllBtn: document.getElementById('clearAllBtn') as HTMLButtonElement,
             infoPanel: document.getElementById('infoPanel') as HTMLDivElement,
-            fileName: document.getElementById('fileName') as HTMLSpanElement,
-            fileSize: document.getElementById('fileSize') as HTMLSpanElement,
-            duration: document.getElementById('duration') as HTMLSpanElement,
-            resolution: document.getElementById('resolution') as HTMLSpanElement
+            infoGrid: document.getElementById('infoGrid') as HTMLDivElement
         };
+
+        this.initializeVideoSection(0);
     }
 
     private initializeEventListeners(): void {
-        // File input change handler
-        this.elements.videoFile.addEventListener('change', (e) => this.handleFileChange(e));
-        
-        // Video control handlers
-        this.elements.playBtn.addEventListener('click', () => this.playVideo());
-        this.elements.pauseBtn.addEventListener('click', () => this.pauseVideo());
-        this.elements.fullscreenBtn.addEventListener('click', () => this.enterFullscreen());
+        this.globalElements.playAllBtn.addEventListener('click', () => this.playAllVideos());
+        this.globalElements.pauseAllBtn.addEventListener('click', () => this.pauseAllVideos());
+        this.globalElements.syncBtn.addEventListener('click', () => this.syncAllVideos());
+        this.globalElements.fullscreenBtn.addEventListener('click', () => this.enterFullscreen());
+        this.globalElements.clearAllBtn.addEventListener('click', () => this.clearAllVideos());
     }
 
-    private handleFileChange(event: Event): void {
+    private initializeVideoSection(index: number): void {
+        const fileInput = document.querySelector(`input[data-index="${index}"]`) as HTMLInputElement;
+        if (fileInput) {
+            fileInput.addEventListener('change', (e) => this.handleFileChange(e, index));
+        }
+    }
+
+    private handleFileChange(event: Event, index: number): void {
         const target = event.target as HTMLInputElement;
         const file = target.files?.[0];
         
         if (file) {
-            this.loadVideoFile(file);
+            this.loadVideoFile(file, index);
         }
     }
 
-    private loadVideoFile(file: File): void {
+    private loadVideoFile(file: File, index: number): void {
+        if (this.videos[index]) {
+            URL.revokeObjectURL(this.videos[index]!.url);
+        }
+
         const url = URL.createObjectURL(file);
-        this.elements.videoPlayer.src = url;
+        const videoElement = document.querySelector(`video[data-index="${index}"]`) as HTMLVideoElement;
+        const uploadLabel = document.querySelector(`label[for="video${index}"]`) as HTMLElement;
         
-        // Enable controls
-        this.enableControls();
+        videoElement.src = url;
         
-        // Show and populate info panel
-        this.showVideoInfo(file);
+        this.videos[index] = {
+            file,
+            element: videoElement,
+            url
+        };
+
+        if (uploadLabel) {
+            uploadLabel.style.display = 'none';
+        }
+
+        this.addNewVideoSection();
+
+        videoElement.addEventListener('loadedmetadata', () => {
+            this.updateVideoInfo();
+            this.updateGlobalControls();
+        });
+
+        this.updateVideoInfo();
+        this.updateGlobalControls();
+    }
+
+    private addNewVideoSection(): void {
+        const nextIndex = this.videos.length;
+        const videoSection = document.createElement('div');
+        videoSection.className = 'video-section';
+        videoSection.setAttribute('data-position', nextIndex.toString());
         
-        // Set up metadata handler
-        this.elements.videoPlayer.addEventListener('loadedmetadata', () => {
-            this.updateVideoMetadata();
+        videoSection.innerHTML = `
+            <div class="position-label">Position ${nextIndex + 1}</div>
+            <video class="video-player" data-index="${nextIndex}"></video>
+            <label for="video${nextIndex}" class="upload-label">📹 <b>Click to upload dashcam video</b></label>
+            <input id="video${nextIndex}" type="file" class="upload-input" accept="video/*" data-index="${nextIndex}">
+        `;
+        
+        this.videoGrid.appendChild(videoSection);
+        this.initializeVideoSection(nextIndex);
+        
+        this.videos.push(null);
+    }
+
+
+
+    private playAllVideos(): void {
+        this.videos.forEach(video => {
+            if (video) {
+                video.element.play();
+            }
         });
     }
 
-    private enableControls(): void {
-        this.elements.playBtn.disabled = false;
-        this.elements.pauseBtn.disabled = false;
-        this.elements.fullscreenBtn.disabled = false;
+    private pauseAllVideos(): void {
+        this.videos.forEach(video => {
+            if (video) {
+                video.element.pause();
+            }
+        });
     }
 
-    private showVideoInfo(file: File): void {
-        this.elements.infoPanel.style.display = 'block';
-        this.elements.fileName.textContent = file.name;
-        this.elements.fileSize.textContent = this.formatFileSize(file.size);
-    }
+    private syncAllVideos(): void {
+        const loadedVideos = this.videos.filter(video => video !== null) as VideoData[];
+        if (loadedVideos.length === 0) return;
 
-    private updateVideoMetadata(): void {
-        const video = this.elements.videoPlayer;
-        this.elements.duration.textContent = this.formatDuration(video.duration);
-        this.elements.resolution.textContent = `${video.videoWidth} × ${video.videoHeight}`;
-    }
+        this.pauseAllVideos();
 
-    private playVideo(): void {
-        this.elements.videoPlayer.play();
-    }
+        loadedVideos.forEach(video => {
+            video.element.currentTime = 0;
+        });
 
-    private pauseVideo(): void {
-        this.elements.videoPlayer.pause();
+        setTimeout(() => {
+            this.playAllVideos();
+        }, 100);
     }
 
     private enterFullscreen(): void {
-        const video = this.elements.videoPlayer;
+        const container = document.querySelector('.panoramic-container') as HTMLElement;
         
-        if (video.requestFullscreen) {
-            video.requestFullscreen();
-        } else if ((video as any).webkitRequestFullscreen) {
-            (video as any).webkitRequestFullscreen();
-        } else if ((video as any).msRequestFullscreen) {
-            (video as any).msRequestFullscreen();
+        if (container.requestFullscreen) {
+            container.requestFullscreen();
+        } else if ((container as any).webkitRequestFullscreen) {
+            (container as any).webkitRequestFullscreen();
+        } else if ((container as any).msRequestFullscreen) {
+            (container as any).msRequestFullscreen();
         }
+    }
+
+    private clearAllVideos(): void {
+        this.videos.forEach((video) => {
+            if (video) {
+                URL.revokeObjectURL(video.url);
+            }
+        });
+        
+        this.videoGrid.innerHTML = `
+            <div class="video-section" data-position="0">
+                <div class="position-label">Position 1</div>
+                <video class="video-player" data-index="0"></video>
+                <label for="video0" class="upload-label">📹 <b>Click to upload dashcam video</b></label>
+                <input id="video0" type="file" class="upload-input" accept="video/*" data-index="0">
+            </div>
+        `;
+        
+        this.videos = [null];
+        this.initializeVideoSection(0);
+        this.updateVideoInfo();
+        this.updateGlobalControls();
+    }
+
+    private updateGlobalControls(): void {
+        const hasVideos = this.videos.some(video => video !== null);
+        
+        this.globalElements.playAllBtn.disabled = !hasVideos;
+        this.globalElements.pauseAllBtn.disabled = !hasVideos;
+        this.globalElements.syncBtn.disabled = !hasVideos;
+        this.globalElements.fullscreenBtn.disabled = !hasVideos;
+        this.globalElements.clearAllBtn.disabled = !hasVideos;
+    }
+
+    private updateVideoInfo(): void {
+        const loadedVideos = this.videos.filter(video => video !== null) as VideoData[];
+        
+        if (loadedVideos.length === 0) {
+            this.globalElements.infoPanel.style.display = 'none';
+            return;
+        }
+
+        this.globalElements.infoPanel.style.display = 'block';
+        this.globalElements.infoGrid.innerHTML = '';
+
+        this.videos.forEach((video, index) => {
+            if (video) {
+                const infoCard = this.createVideoInfoCard(video, index + 1);
+                this.globalElements.infoGrid.appendChild(infoCard);
+            }
+        });
+    }
+
+    private createVideoInfoCard(video: VideoData, position: number): HTMLElement {
+        const card = document.createElement('div');
+        card.className = 'video-info';
+        
+        card.innerHTML = `
+            <h4>Position ${position}</h4>
+            <div class="info-item">
+                <span class="info-label">File Name:</span>
+                <span class="info-value">${video.file.name}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">File Size:</span>
+                <span class="info-value">${this.formatFileSize(video.file.size)}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Duration:</span>
+                <span class="info-value">${this.formatDuration(video.element.duration || 0)}</span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">Resolution:</span>
+                <span class="info-value">${video.element.videoWidth || 0} × ${video.element.videoHeight || 0}</span>
+            </div>
+        `;
+        
+        return card;
     }
 
     private formatFileSize(bytes: number): string {
@@ -120,6 +250,8 @@ class DashcamViewer {
     }
 
     private formatDuration(seconds: number): string {
+        if (!seconds || isNaN(seconds)) return '0:00';
+        
         const hours = Math.floor(seconds / 3600);
         const minutes = Math.floor((seconds % 3600) / 60);
         const secs = Math.floor(seconds % 60);
@@ -132,8 +264,6 @@ class DashcamViewer {
     }
 }
 
-// Initialize the dashcam viewer when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    new DashcamViewer();
-    console.log('Dashcam Viewer initialized successfully!');
+    new PanoramicDashcamViewer();
 });
