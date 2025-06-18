@@ -159,6 +159,15 @@ h1 {
     background: #d32f2f;
 }
 
+.btn.danger:disabled {
+    background: #ccc !important;
+    cursor: not-allowed;
+}
+
+.btn.danger:disabled:hover {
+    background: #ccc !important;
+}
+
 .info-panel {
     background: #f5f5f5;
     border-radius: 8px;
