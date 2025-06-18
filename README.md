@@ -26,6 +26,12 @@ npm run serve
 
 Navigate to `http://127.0.0.1:8080/public/index.html`.
 
+## Hosting
+
+Simplest way to host the app is to use [<small>vercel.com</small>](https://vercel.com). It detects `vercel.json`, installs the dependencies and runs the app on the cloud.
+
+[![Vercel](https://img.shields.io/badge/Deployed_on-Vercel-black?style=for-the-badge&logo=vercel)](https://dashcamviewer.programmersdiary.com/)
+
 ## License
 
 Please read a `LICENSE` file.
