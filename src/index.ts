@@ -79,6 +79,7 @@ class PanoramicDashcamViewer {
         const uploadLabel = document.querySelector(`label[for="video${index}"]`) as HTMLElement;
         
         videoElement.src = url;
+        videoElement.controls = true;
         
         this.videos[index] = {
             file,
@@ -125,7 +126,7 @@ class PanoramicDashcamViewer {
         
         videoSection.innerHTML = `
             <div class="position-label">Position ${nextIndex + 1}</div>
-            <video class="video-player" data-index="${nextIndex}"></video>
+            <video class="video-player" data-index="${nextIndex}" controls></video>
             <label for="video${nextIndex}" class="upload-label">📹 <b>Click to upload dashcam video</b></label>
             <input id="video${nextIndex}" type="file" class="upload-input" accept="video/*" data-index="${nextIndex}">
         `;
@@ -209,7 +210,7 @@ class PanoramicDashcamViewer {
         
         videoSection.innerHTML = `
             <div class="position-label">Position ${nextIndex + 1}</div>
-            <video class="video-player" data-index="${nextIndex}"></video>
+            <video class="video-player" data-index="${nextIndex}" controls></video>
             <label for="video${nextIndex}" class="upload-label">📹 <b>Click to upload dashcam video</b></label>
             <input id="video${nextIndex}" type="file" class="upload-input" accept="video/*" data-index="${nextIndex}">
         `;
@@ -240,7 +241,7 @@ class PanoramicDashcamViewer {
         this.videoGrids[0].innerHTML = `
             <div class="video-section" data-position="0" data-grid="0">
                 <div class="position-label">Position 1</div>
-                <video class="video-player" data-index="0"></video>
+                <video class="video-player" data-index="0" controls></video>
                 <label for="video0" class="upload-label">📹 <b>Click to upload dashcam video</b></label>
                 <input id="video0" type="file" class="upload-input" accept="video/*" data-index="0">
             </div>
