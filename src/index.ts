@@ -168,8 +168,9 @@ class PanoramicDashcamViewer {
     }
 
     private enterFullscreen(): void {
-        document.querySelectorAll('.video-section').forEach((section, index) => {
-            if (this.videos[index] === null) {
+        document.querySelectorAll('.video-section').forEach((section) => {
+            const videoIndex = parseInt((section as HTMLElement).getAttribute('data-position') || '0');
+            if (this.videos[videoIndex] === null) {
                 (section as HTMLElement).style.display = 'none';
             }
         });
