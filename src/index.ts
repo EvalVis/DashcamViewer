@@ -167,6 +167,12 @@ class PanoramicDashcamViewer {
     }
 
     private enterFullscreen(): void {
+        document.querySelectorAll('.video-section').forEach((section, index) => {
+            if (this.videos[index] === null) {
+                (section as HTMLElement).style.display = 'none';
+            }
+        });
+
         const container = document.querySelector('.panoramic-container') as HTMLElement;
         
         if (container.requestFullscreen) {
@@ -175,6 +181,17 @@ class PanoramicDashcamViewer {
             (container as any).webkitRequestFullscreen();
         } else if ((container as any).msRequestFullscreen) {
             (container as any).msRequestFullscreen();
+        }
+
+        document.addEventListener('fullscreenchange', this.onFullscreenExit.bind(this));
+        document.addEventListener('webkitfullscreenchange', this.onFullscreenExit.bind(this));
+    }
+
+    private onFullscreenExit(): void {
+        if (!document.fullscreenElement && !(document as any).webkitFullscreenElement) {
+            document.querySelectorAll('.video-section').forEach(section => {
+                (section as HTMLElement).style.display = 'flex';
+            });
         }
     }
 
